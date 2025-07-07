@@ -6,10 +6,8 @@ import { AnalysisResult } from './components/AnalysisResult';
 import { EmptyState } from './components/EmptyState';
 import { SettingsModal } from './components/SettingsModal';
 import { useImageAnalysis } from './hooks/useImageAnalysis';
+import { generateVolleyballCourt } from './utils/courtGenerator';
 import { Trash2, Download } from 'lucide-react';
-
-// Use the user-provided volleyball court image URL directly
-const DEFAULT_COURT_IMAGE_URL = 'https://cdn.chatandbuild.com/users/684b854000d8c4b56fb7f2b2/volleyball-heatmap-1751874618875-683186929.png';
 
 function App() {
   const { results, progress, error, analyzeImage, clearResults, removeResult } = useImageAnalysis();
@@ -32,65 +30,18 @@ function App() {
 
   const handleDefaultImageSelect = async () => {
     try {
-      // Use the proxy server to fetch the image to avoid CORS issues
-      const proxyUrl = 'undefined';
-      const accessToken = import.meta.env.VITE_PROXY_SERVER_ACCESS_TOKEN || 'undefined';
-      
-      const response = await fetch(proxyUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          url: DEFAULT_COURT_IMAGE_URL,
-          method: 'GET',
-          headers: {},
-          body: {}
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
-      }
-      
-      const blob = await response.blob();
-      const defaultFile = new File([blob], 'volleyball-court-default.png', {
-        type: 'image/png'
-      });
-      
-      setCurrentImageFile(defaultFile);
+      const courtFile = await generateVolleyballCourt();
+      setCurrentImageFile(courtFile);
       setAnnotationMode(true);
     } catch (err) {
-      console.error('Failed to load default image:', err);
-      
-      // Fallback: try direct fetch
-      try {
-        const directResponse = await fetch(DEFAULT_COURT_IMAGE_URL);
-        if (!directResponse.ok) {
-          throw new Error(`Direct fetch failed: ${directResponse.status}`);
-        }
-        
-        const blob = await directResponse.blob();
-        const defaultFile = new File([blob], 'volleyball-court-default.png', {
-          type: 'image/png'
-        });
-        
-        setCurrentImageFile(defaultFile);
-        setAnnotationMode(true);
-      } catch (fallbackErr) {
-        console.error('Fallback fetch also failed:', fallbackErr);
-        
-        // Show user-friendly error message
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-        alert(`Failed to load default image: ${errorMessage}\n\nPlease try uploading your own image instead.`);
-      }
+      console.error('Failed to generate volleyball court:', err);
+      alert('Failed to generate volleyball court. Please try uploading your own image.');
     }
   };
 
   const handleAnnotationSubmit = async (annotatedImageBlob: Blob) => {
     // Convert blob to file
-    const annotatedFile = new File([annotatedImageBlob], `annotated-${currentImageFile?.name || 'image.png'}`, {
+    const annotatedFile = new File([annotatedImageBlob], `annotated-${currentImageFile?.name || 'court.png'}`, {
       type: 'image/png'
     });
 
