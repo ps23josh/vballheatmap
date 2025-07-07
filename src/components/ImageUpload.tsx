@@ -10,7 +10,7 @@ interface ImageUploadProps {
   disabled?: boolean;
 }
 
-const DEFAULT_COURT_IMAGE_URL = '/volleyball-court-default.png';
+const DEFAULT_COURT_IMAGE_URL = 'https://cdn.chatandbuild.com/users/684b854000d8c4b56fb7f2b2/volleyball-heatmap-1751874618875-683186929.png';
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
   onImageSelect,
@@ -25,6 +25,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showOptions, setShowOptions] = useState(false);
   const [showImageChoice, setShowImageChoice] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -78,6 +79,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
   const handleGetStarted = useCallback(() => {
     setShowImageChoice(true);
+    setImageLoadError(false);
   }, []);
 
   const handleUseDefault = useCallback(() => {
@@ -138,21 +140,24 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           <div className="grid md:grid-cols-2 gap-6">
             {/* Default Image Option */}
             <div className="border-2 border-gray-200 rounded-xl p-6 hover:border-indigo-300 transition-colors">
-              <div className="aspect-video bg-gray-100 rounded-lg mb-4 overflow-hidden">
-                <img
-                  src={DEFAULT_COURT_IMAGE_URL}
-                  alt="Default volleyball court"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    console.error('Failed to load default image preview');
-                    // Fallback to a placeholder SVG
-                    const target = e.target as HTMLImageElement;
-                    target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgdmlld0JveD0iMCAwIDQwMCAyMjUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjI1IiBmaWxsPSIjRjNGNEY2Ii8+CjxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIxMjUiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+CjxsaW5lIHgxPSIyMDAiIHkxPSI1MCIgeDI9IjIwMCIgeTI9IjE3NSIgc3Ryb2tlPSIjNkI3MjgwIiBzdHJva2Utd2lkdGg9IjIiLz4KPHN2ZyB4PSIxNzUiIHk9IjEwMCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjI1Ij4KPHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iMjUiIHZpZXdCb3g9IjAgMCA1MCAyNSIgZmlsbD0ibm9uZSI+CjxyZWN0IHdpZHRoPSI1MCIgaGVpZ2h0PSIyNSIgZmlsbD0iIzM3NDE1MSIvPgo8dGV4dCB4PSIyNSIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNvdXJ0PC90ZXh0Pgo8L3N2Zz4KPHN2Zz4KPC9zdmc+';
-                  }}
-                  onLoad={() => {
-                    console.log('Default image loaded successfully');
-                  }}
-                />
+              <div className="aspect-video bg-gray-100 rounded-lg mb-4 overflow-hidden relative">
+                {!imageLoadError ? (
+                  <img
+                    src={DEFAULT_COURT_IMAGE_URL}
+                    alt="Default volleyball court"
+                    className="w-full h-full object-cover"
+                    onLoad={() => setImageLoadError(false)}
+                    onError={() => setImageLoadError(true)}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                    <div className="text-center p-4">
+                      <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">Default Court Image</p>
+                      <p className="text-xs text-gray-400 mt-1">Preview available</p>
+                    </div>
+                  </div>
+                )}
               </div>
               <h4 className="font-semibold text-gray-900 mb-2">Use Default Court</h4>
               <p className="text-sm text-gray-600 mb-4">
